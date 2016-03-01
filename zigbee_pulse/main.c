@@ -7,8 +7,7 @@
 //宏定义
 #define false 0
 #define true  1
-#define FOSC  32000000L                // frequency oscillate 系统时钟，长整形类型
-#define T1MS  (FOSC/32/500)      //500HZ in 12T MODE ，12分频，设定定时器为2ms触发一次的初值
+
 
 #define HI_UINT16(a) (((a) >> 8) & 0xFF)
 #define LO_UINT16(a) ((a) & 0xFF)
@@ -18,12 +17,12 @@
 #define ADC_10_BIT          0x20     //adc分辨率10位
 #define ADC_PULSE_SENS      0x04   //adc输入P0_4
 #define ADC_SINGLE_CONVERSION(settings) \
-   do{ ADCCON3 = (settings); }while(0)
-#define ADC_SAMPLE_SINGLE() \
-  do { ADC_STOP(); ADCCON1 |= 0x40;  } while (0)
-#define ADC_SAMPLE_READY()  (ADCCON1 & 0x80)
-#define ADC_STOP() \
-  do { ADCCON1 |= 0x30; } while (0)
+   do{ ADCCON3 = (settings); }while(0) //adc设置参考电压，分辨率，输入引脚
+#define ADC_START_SINGLE() \
+  do { ADC_START_MODE(); ADCCON1 |= 0x40;  } while (0)//adc手动启动
+#define ADC_SAMPLE_READY()  (ADCCON1 & 0x80) //adc转换结束，为下一次做准备
+#define ADC_START_MODE() \
+  do { ADCCON1 |= 0x30; } while (0) //adc启动方式选择为手动触发
 
 //全局变量
 unsigned char PulsePin = 4; //p0_4
@@ -154,13 +153,14 @@ void T3_init()
 }
 
 unsigned int analogRead(unsigned char channel)
-{unsigned short value;
-    APCFG=channel;
-    ADC_SINGLE_CONVERSION(ADC_REF_AVDD | ADC_10_BIT | ADC_PULSE_SENS);    // 使用1.25V内部电压，12位分辨率，AD源为：温度传感器
-    ADC_SAMPLE_SINGLE();                                                   //开启单通道ADC
+{
+    unsigned short value; //短整型16位
+    APCFG=channel;  //配置P0_7~P0_0为模拟I/O，1使能，0禁用
+    ADC_SINGLE_CONVERSION(ADC_REF_AVDD | ADC_10_BIT | ADC_PULSE_SENS);    // 使用3.3V参考电压，10位分辨率，AD源为P0_4
+    ADC_START_SINGLE();                                                   //开启单通道ADC
     while(!ADC_SAMPLE_READY());                 //等待AD转换完成
     value =  ADCL >> 5;                         //ADCL寄存器低2位无效
-    value |= (((unsigned short)ADCH) << 3);   
+    value |= (((unsigned short)ADCH) << 3);   //ADCH最高位为符号位
     return value;
 }
 // Timer 0中断子程序，每2MS中断一次，读取AD值，计算心率值
