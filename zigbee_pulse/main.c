@@ -59,14 +59,6 @@ void sys_init(void);//系统初始化
 char Putchar(unsigned char dat);//发送字节函数
 __interrupt void T1_ISR(void) ;//定时器1中断函数
 
-//时钟配置
-void Cfg_32M()
-{
-    CLKCONCMD &=0xBF;//1011 1111  //让外部32M石英晶振工作
-    while(CLKCONSTA & 0x40);//0100 0000  //等待晶振稳定
-    CLKCONCMD &=0xF8;//1111 1000   //不分频的供给CPU
-}
-
 
 //主函数
 void main()
@@ -78,7 +70,8 @@ void main()
   {
     sendDataToProcessing('S', Signal);     // send Processing the raw Pulse Sensor data
     if (QS == true)
-    {                       // Quantified Self flag is true when arduino finds a heartbeat
+    {          
+      // Quantified Self flag is true when arduino finds a heartbeat
       sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
       sendDataToProcessing('Q',IBI);   // send time between beats with a 'Q' prefix
       QS = false; 
@@ -88,13 +81,15 @@ void main()
   
 }
 
-//延时函数
-void delay(unsigned int n)
+//时钟配置
+void Cfg_32M()
 {
-	unsigned int i,j;
-	for(i=0;i<n;i++)
-		for(j=0;j<100;j++);
+    CLKCONCMD &=0xBF;//1011 1111  //让外部32M石英晶振工作
+    while(CLKCONSTA & 0x40);//0100 0000  //等待晶振稳定
+    CLKCONCMD &=0xF8;//1111 1000   //不分频的供给CPU
 }
+
+//串口初始化
 void UART_init(void)
 {
   PERCFG &=0xFE;//把这个寄存器的第零位强行清零  1111 1110 
@@ -107,6 +102,16 @@ void UART_init(void)
   IEN0 |=0x04; //开接收数据的中断  0000 0100
   EA=1;
 }
+
+
+//延时函数
+void delay(unsigned int n)
+{
+	unsigned int i,j;
+	for(i=0;i<n;i++)
+		for(j=0;j<100;j++);
+}
+
 //发字符
 char Putchar(unsigned char dat)
 {
@@ -141,13 +146,17 @@ void sendDataToProcessing(char symbol, unsigned int dat ){
   UartTX_Send_String(buf, len);
 }
 
-//定时器初始化
+//定时器初始化(CLKCONCMD.TICKSPD为定时器提供滴答时钟，默认为001，即16MHz)
 void T3_init()
 {     
       T3CTL |= 0x08 ;             //开溢出中断  00001000   
       T3IE = 1;                   //开总中断和T3中断
-      T3CTL|=0XE0;               // 11100000 128分频,128/16000000*N=0.5S,N=65200
-      T3CTL &= ~0X03;            //自动重装 00－>0xff  65200/256=254(次)
+      T3CTL|=0XE0;               // 11100000 128分频,128/16000000*N=0.002S,N=250
+      //T3CTL &=~ 0X03;            //模计数方式，0x00到T3CC0
+                    
+      T3CTL |= 0X02;            //模计数方式，0x00到T3CC0
+      T3CC0=0xF9;              //设置T3CC0为249
+      T3CCTL0 |=0x04;          //使用模模式，需要设置通道0的输出比较模式
       T3CTL |=0X10;//启动
       EA = 1; 
 }
@@ -163,18 +172,18 @@ unsigned int analogRead(unsigned char channel)
     value |= (((unsigned short)ADCH) << 3);   //ADCH最高位为符号位
     return value;
 }
+
 // Timer 0中断子程序，每2MS中断一次，读取AD值，计算心率值
 #pragma vector = T3_VECTOR//定时器3 
  __interrupt void T3_ISR(void) 
 
 {          
-  IRCON = 0x00;                  //清中断标志, 也可由硬件自动完成 
+  IRCON = 0x00;                  //中断标志4，清中断标志, 也可由硬件自动完成 
   int N;
   unsigned char i;
-	// keep a running total of the last 10 IBI values
+// keep a running total of the last 10 IBI values
   unsigned int runningTotal = 0;                  // clear the runningTotal variable    
-
-	EA=0;                                      // disable interrupts while we do this 关中断
+  EA=0;                                      // disable interrupts while we do this （EA:cpu总中断开关）关中断
 	//TL0=T0MS;
 	//TH0=T0MS>>8;				//reload 16 bit TIMER0	//重新载入定时器初值
   Signal = analogRead(PulsePin);              // read the Pulse Sensor 
@@ -219,7 +228,7 @@ unsigned int analogRead(unsigned char channel)
 
 
 
-      for(i=0; i<=8; i++){                // shift data in the rate array
+      for(i=0; i<=8; i++){                // shift data in the rate array（左移）
         rate[i] = rate[i+1];                  // and drop the oldest IBI value 
         runningTotal += rate[i];              // add up the 9 oldest IBI values
       }
@@ -230,13 +239,17 @@ unsigned int analogRead(unsigned char channel)
       BPM = 60000/runningTotal;               // how many beats can fit into a minute? that's BPM!
 			if(BPM>200)BPM=200;			//限制BPM最高显示值
 			if(BPM<30)BPM=30;				//限制BPM最低显示值
-      QS = true;                              // set Quantified Self flag 
+      QS = true; 
+      
+     
+      // set Quantified Self flag 
       // QS FLAG IS NOT CLEARED INSIDE THIS ISR
     }                       
   }
 
   if (Signal < thresh && Pulse == true){   // when the values are going down, the beat is over
 //    blinkPin=1;            // turn off pin 13 LED
+    
     Pulse = false;                         // reset the Pulse flag so we can do it again
     amp = Peak - Trough;                           // get amplitude of the pulse wave
     thresh = amp/2 + Trough;                    // set thresh at 50% of the amplitude
