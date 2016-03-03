@@ -76,7 +76,7 @@ void main()
       sendDataToProcessing('Q',IBI);   // send time between beats with a 'Q' prefix
       QS = false; 
     }// reset the Quantified Self flag for next time 
-    delay(138);                             //  take a break 19.6ms
+    delay(137);                             //  take a break 19.6ms
   }
   
 }
@@ -151,9 +151,7 @@ void T3_init()
 {     
       T3CTL |= 0x08 ;             //开溢出中断  00001000   
       T3IE = 1;                   //开总中断和T3中断
-      T3CTL|=0XE0;               // 11100000 128分频,128/16000000*N=0.002S,N=250
-      //T3CTL &=~ 0X03;            //模计数方式，0x00到T3CC0
-                    
+      T3CTL|=0XE0;               // 11100000 128分频,128/16000000*N=0.002S,N=250              
       T3CTL |= 0X02;            //模计数方式，0x00到T3CC0
       T3CC0=0xF9;              //设置T3CC0为249
       T3CCTL0 |=0x04;          //使用模模式，需要设置通道0的输出比较模式
@@ -179,7 +177,7 @@ unsigned int analogRead(unsigned char channel)
 
 {          
   IRCON = 0x00;                  //中断标志4，清中断标志, 也可由硬件自动完成 
-  int N;
+  long N;
   unsigned char i;
 // keep a running total of the last 10 IBI values
   unsigned int runningTotal = 0;                  // clear the runningTotal variable    
@@ -192,10 +190,9 @@ unsigned int analogRead(unsigned char channel)
 
 
     //  find the peak（波峰） and trough（波谷） of the pulse wave
-  if(Signal < thresh && N > (IBI/5)*3){       // avoid dichrotic noise by waiting 3/5 of last IBI
-    if (Signal < Trough){                        // T is the trough
+  //if(Signal < thresh && N > (IBI/5)*3){       // avoid dicrotic noise by waiting 3/5 of last IBI
+  if(Signal < thresh && Signal < Trough){                  // T is the trough
       Trough = Signal;                         // keep track of lowest point in pulse wave 
-    }
   }
 
   if(Signal > thresh && Signal > Peak){          // thresh condition helps avoid noise
@@ -205,7 +202,8 @@ unsigned int analogRead(unsigned char channel)
   //  NOW IT'S TIME TO LOOK FOR THE HEART BEAT
   // signal surges up in value every time there is a pulse
   //如果大于250ms
-  if (N > 250){                                   // avoid high frequency noise
+  //if (N > 250){
+  //if (N > (IBI/5)*3){// avoid high frequency noise
     if ( (Signal > thresh) && (Pulse == false) && (N > (IBI/5)*3) ){        
       Pulse = true;                               // set the Pulse flag when we think there is a pulse
 //      blinkPin=0;               // turn on pin 13 LED
@@ -218,7 +216,7 @@ unsigned int analogRead(unsigned char channel)
           rate[i] = IBI;                      
         }
       }
-
+//首次检测到心跳，只执行一次
       if(firstBeat){                         // if it's the first time we found a beat, if firstBeat == TRUE
         firstBeat = false;                   // clear firstBeat flag
         secondBeat = true;                   // set the second beat flag
@@ -245,8 +243,9 @@ unsigned int analogRead(unsigned char channel)
       // set Quantified Self flag 
       // QS FLAG IS NOT CLEARED INSIDE THIS ISR
     }                       
-  }
-
+  
+  
+//重新设置指标
   if (Signal < thresh && Pulse == true){   // when the values are going down, the beat is over
 //    blinkPin=1;            // turn off pin 13 LED
     
@@ -256,7 +255,7 @@ unsigned int analogRead(unsigned char channel)
     Peak = thresh;                            // reset these for next time
     Trough = thresh;
   }
-
+//超时重置
   if (N > 2500){                           // if 2.5 seconds go by without a beat
     thresh = 512;                          // set thresh default
     Peak = 512;                               // set P default

@@ -71,7 +71,7 @@
       <outputs>
         <tool>
           <name>XLINK</name>
-          <file> 6 11</file>
+          <file> 11 6</file>
         </tool>
       </outputs>
     </file>
