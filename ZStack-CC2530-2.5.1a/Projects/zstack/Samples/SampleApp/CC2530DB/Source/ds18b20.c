@@ -20,7 +20,7 @@ void Temp_test(void); //温度读取函数
 
 
 
-unsigned char temp,test1,test2; //储存温度信息
+unsigned char temp[3],test1,test2; //储存温度信息
 
 //时钟频率为32M
 void Ds18b20Delay(uint k) //调用函数，延时us
@@ -115,7 +115,7 @@ uchar Ds18b20Read(void)
 
 void Temp_test(void) //温度读取函数
 {
-  uchar V1,V2;
+  //uchar V1,V2;
   
   test1=Ds18b20Initial();
   Ds18b20Write(0xcc);
@@ -125,9 +125,11 @@ void Temp_test(void) //温度读取函数
   Ds18b20Write(0xcc);
   Ds18b20Write(0xbe);
   
-  V1 = Ds18b20Read();
-  V2 = Ds18b20Read();
-  temp = ((V1 >> 4)+((V2 & 0x07)*16));  
+  //V1 = Ds18b20Read();
+  //V2 = Ds18b20Read();
+  //temp = ((V1 >> 4)+((V2 & 0x07)*16));  
+  temp[0] = Ds18b20Read();
+  temp[1] = Ds18b20Read();
   
 
 }

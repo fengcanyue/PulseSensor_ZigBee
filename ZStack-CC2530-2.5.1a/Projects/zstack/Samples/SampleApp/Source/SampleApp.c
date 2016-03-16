@@ -153,7 +153,7 @@ uint8 SampleAppFlashCounter = 0;
 void SampleApp_HandleKeys( uint8 shift, uint8 keys );
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pckt );
 void SampleApp_SendPeriodicMessage( void );
-void SampleApp_SendPointToPointMessage(void); //?????????
+void SampleApp_SendPointToPointMessage(uint8* data,uint8 len); //?????????
 void SampleApp_SendFlashMessage( uint16 flashTime );
 
 /*********************************************************************
@@ -326,15 +326,12 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   //  (setup in SampleApp_Init()).
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )
   {
-    uint8 T[5];   
+    //uint8 T[5];   
     Temp_test();     
    
-    T[0]=temp/10+48;
-    T[1]=temp%10+48;
-
-       
-    //???????????
-    SampleApp_SendPointToPointMessage();
+    //T[0]=temp/10+48;
+    //T[1]=temp%10+48;
+    SampleApp_SendPointToPointMessage(temp,2);
     
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
@@ -457,16 +454,14 @@ void SampleApp_SendPeriodicMessage( void )
     // Error occurred in request to send.
   }
 }
-void SampleApp_SendPointToPointMessage( void )
+void SampleApp_SendPointToPointMessage( uint8* data ,uint8 len)
 {
-  uint8 T[2];//??
-  T[0]=temp/10+48;
-  T[1]=temp%10+48;
+  
   if ( AF_DataRequest( &Point_To_Point_DstAddr,
                        &SampleApp_epDesc,
                        SAMPLEAPP_POINT_TO_POINT_CLUSTERID,
-                       2,
-                       T,
+                       len,
+                       data,
                        &SampleApp_TransID,
                        AF_DISCV_ROUTE,
                        AF_DEFAULT_RADIUS ) == afStatus_SUCCESS )
