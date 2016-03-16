@@ -22,7 +22,7 @@
   its documentation for any purpose.
 
   YOU FURTHER ACKNOWLEDGE AND AGREE THAT THE SOFTWARE AND DOCUMENTATION ARE
-  PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
+  PROVIDED “AS IS?WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED,
   INCLUDING WITHOUT LIMITATION, ANY WARRANTY OF MERCHANTABILITY, TITLE,
   NON-INFRINGEMENT AND FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL
   TEXAS INSTRUMENTS OR ITS LICENSORS BE LIABLE OR OBLIGATED UNDER CONTRACT,
@@ -71,6 +71,11 @@
 #include "hal_lcd.h"
 #include "hal_led.h"
 #include "hal_key.h"
+
+#include "MT_UART.h"
+
+#include "ds18b20.h" 
+
 
 /*********************************************************************
  * MACROS
@@ -135,6 +140,8 @@ uint8 SampleApp_TransID;  // This is the unique message ID (counter)
 afAddrType_t SampleApp_Periodic_DstAddr;
 afAddrType_t SampleApp_Flash_DstAddr;
 
+afAddrType_t Point_To_Point_DstAddr;//?????????
+
 aps_Group_t SampleApp_Group;
 
 uint8 SampleAppPeriodicCounter = 0;
@@ -146,6 +153,7 @@ uint8 SampleAppFlashCounter = 0;
 void SampleApp_HandleKeys( uint8 shift, uint8 keys );
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pckt );
 void SampleApp_SendPeriodicMessage( void );
+void SampleApp_SendPointToPointMessage(void); //?????????
 void SampleApp_SendFlashMessage( uint16 flashTime );
 
 /*********************************************************************
@@ -175,6 +183,14 @@ void SampleApp_Init( uint8 task_id )
   SampleApp_TaskID = task_id;
   SampleApp_NwkState = DEV_INIT;
   SampleApp_TransID = 0;
+  
+ /***********?????************/
+  MT_UartInit();//???
+  MT_UartRegisterTaskID(task_id);//?????
+  HalUARTWrite(0,"Hello World\n",12);
+  
+ // ????????  
+  P0SEL &= 0xbf;         //DS18B20?io????
 
   // Device hardware initialization can be added here or in main() (Zmain.c).
   // If the hardware is application specific - add it here.
@@ -208,6 +224,12 @@ void SampleApp_Init( uint8 task_id )
   SampleApp_Flash_DstAddr.addrMode = (afAddrMode_t)afAddrGroup;
   SampleApp_Flash_DstAddr.endPoint = SAMPLEAPP_ENDPOINT;
   SampleApp_Flash_DstAddr.addr.shortAddr = SAMPLEAPP_FLASH_GROUP;
+  
+    // ?????????
+  Point_To_Point_DstAddr.addrMode = (afAddrMode_t)Addr16Bit; //??
+  Point_To_Point_DstAddr.endPoint = SAMPLEAPP_ENDPOINT;
+  Point_To_Point_DstAddr.addr.shortAddr = 0x0000;//?????
+  
 
   // Fill out the endpoint description.
   SampleApp_epDesc.endPoint = SAMPLEAPP_ENDPOINT;
@@ -270,9 +292,9 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
         // Received whenever the device changes state in the network
         case ZDO_STATE_CHANGE:
           SampleApp_NwkState = (devStates_t)(MSGpkt->hdr.status);
-          if ( (SampleApp_NwkState == DEV_ZB_COORD)
-              || (SampleApp_NwkState == DEV_ROUTER)
-              || (SampleApp_NwkState == DEV_END_DEVICE) )
+          if ( //(SampleApp_NwkState == DEV_ZB_COORD)??????????
+                (SampleApp_NwkState == DEV_ROUTER)
+             || (SampleApp_NwkState == DEV_END_DEVICE) )
           {
             // Start sending the periodic message in a regular interval.
             osal_start_timerEx( SampleApp_TaskID,
@@ -304,9 +326,16 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   //  (setup in SampleApp_Init()).
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )
   {
-    // Send the periodic message
-    SampleApp_SendPeriodicMessage();
+    uint8 T[5];   
+    Temp_test();     
+   
+    T[0]=temp/10+48;
+    T[1]=temp%10+48;
 
+       
+    //???????????
+    SampleApp_SendPointToPointMessage();
+    
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
@@ -390,7 +419,10 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 
   switch ( pkt->clusterId )
   {
-    case SAMPLEAPP_PERIODIC_CLUSTERID:
+    case SAMPLEAPP_POINT_TO_POINT_CLUSTERID:
+      HalUARTWrite(0,"Temp is:",8);        //???????
+      HalUARTWrite(0,&pkt->cmd.Data[0],2); //ASCII???PC?
+      HalUARTWrite(0,"\n",1);              // ????
       break;
 
     case SAMPLEAPP_FLASH_CLUSTERID:
@@ -415,6 +447,26 @@ void SampleApp_SendPeriodicMessage( void )
                        SAMPLEAPP_PERIODIC_CLUSTERID,
                        1,
                        (uint8*)&SampleAppPeriodicCounter,
+                       &SampleApp_TransID,
+                       AF_DISCV_ROUTE,
+                       AF_DEFAULT_RADIUS ) == afStatus_SUCCESS )
+  {
+  }
+  else
+  {
+    // Error occurred in request to send.
+  }
+}
+void SampleApp_SendPointToPointMessage( void )
+{
+  uint8 T[2];//??
+  T[0]=temp/10+48;
+  T[1]=temp%10+48;
+  if ( AF_DataRequest( &Point_To_Point_DstAddr,
+                       &SampleApp_epDesc,
+                       SAMPLEAPP_POINT_TO_POINT_CLUSTERID,
+                       2,
+                       T,
                        &SampleApp_TransID,
                        AF_DISCV_ROUTE,
                        AF_DEFAULT_RADIUS ) == afStatus_SUCCESS )
