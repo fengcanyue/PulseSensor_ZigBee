@@ -1,6 +1,10 @@
-Projects/zstack/Samples/SampleApp/CC2530DB/CoordinatorEB/
-Projects/zstack/Samples/SampleApp/CC2530DB/EndDeviceEB/
+Projects/zstack/Samples/SampleApp/CC2530DB/CoordinatorEB
+Projects/zstack/Samples/SampleApp/CC2530DB/DemoEB
+Projects/zstack/Samples/SampleApp/CC2530DB/EndDeviceEB
+Projects/zstack/Samples/SampleApp/CC2530DB/RouterEB
+Projects/zstack/Samples/SampleApp/CC2530DB/settings
 Projects/zstack/Samples/SampleApp/CC2530DB/SampleApp.dep
-Projects/zstack/Samples/SampleApp/CC2530DB/settings/
-Projects/zstack/Samples/SampleApp/CC2530DB/DemoEB/
-Projects/zstack/Samples/SampleApp/CC2530DB/RouterEB/
+Projects/zstack/Samples/SampleApp/CC2530DB/Backup (2) of SampleApp.ewp
+Projects/zstack/Samples/SampleApp/CC2530DB/Backup (2) of SampleApp.ewd
+Projects/zstack/Samples/SampleApp/CC2530DB/Backup of SampleApp.ewd
+Projects/zstack/Samples/SampleApp/CC2530DB/Backup of SampleApp.ewp

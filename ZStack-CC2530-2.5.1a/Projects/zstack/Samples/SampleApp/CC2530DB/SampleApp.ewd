@@ -186,7 +186,7 @@
       <name>CHIPCON_ID</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>3</version>
+        <version>4</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -241,7 +241,7 @@
         </option>
         <option>
           <name>ChipconFlashLockInfo</name>
-          <state>&lt;page size info. missing></state>
+          <state>&lt;page size info. missing&gt;</state>
         </option>
         <option>
           <name>ChipconBootLock</name>
@@ -274,6 +274,14 @@
         <option>
           <name>ChipconFlashRadio</name>
           <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID Selection method</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID</name>
+          <state>0000</state>
         </option>
       </data>
     </settings>
@@ -327,7 +335,7 @@
       <name>INFINEON_ID</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -378,6 +386,14 @@
           <name>InfServerName2</name>
           <version>0</version>
           <state>3</state>
+        </option>
+        <option>
+          <name>InfineonHasCodeInXRAM</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>Infineon code in XRAM area</name>
+          <state>0xF000-0xF5FF</state>
         </option>
       </data>
     </settings>
@@ -526,9 +542,9 @@
     </settings>
     <settings>
       <name>CYGNAL_ID</name>
-      <archiveVersion>1</archiveVersion>
+      <archiveVersion>2</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -593,6 +609,10 @@
           <name>SilabsRegAfter</name>
           <state>0</state>
         </option>
+        <option>
+          <name>SilabsBankedXDATA</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -630,12 +650,12 @@
         <loadFlag>0</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\Stack\Stack.ENU.ewplugin</file>
+        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
         <loadFlag>1</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
-        <loadFlag>1</loadFlag>
+        <file>$EW_DIR$\common\plugins\uCProbe\uCProbePlugin.ENU.ewplugin</file>
+        <loadFlag>0</loadFlag>
       </plugin>
     </debuggerPlugins>
   </configuration>
@@ -823,7 +843,7 @@
       <name>CHIPCON_ID</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>3</version>
+        <version>4</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -878,7 +898,7 @@
         </option>
         <option>
           <name>ChipconFlashLockInfo</name>
-          <state>&lt;page size info. missing></state>
+          <state>&lt;page size info. missing&gt;</state>
         </option>
         <option>
           <name>ChipconBootLock</name>
@@ -911,6 +931,14 @@
         <option>
           <name>ChipconFlashRadio</name>
           <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID Selection method</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID</name>
+          <state>0000</state>
         </option>
       </data>
     </settings>
@@ -964,7 +992,7 @@
       <name>INFINEON_ID</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1015,6 +1043,14 @@
           <name>InfServerName2</name>
           <version>0</version>
           <state>3</state>
+        </option>
+        <option>
+          <name>InfineonHasCodeInXRAM</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>Infineon code in XRAM area</name>
+          <state>0xF000-0xF5FF</state>
         </option>
       </data>
     </settings>
@@ -1163,9 +1199,9 @@
     </settings>
     <settings>
       <name>CYGNAL_ID</name>
-      <archiveVersion>1</archiveVersion>
+      <archiveVersion>2</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1230,6 +1266,10 @@
           <name>SilabsRegAfter</name>
           <state>0</state>
         </option>
+        <option>
+          <name>SilabsBankedXDATA</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -1267,12 +1307,12 @@
         <loadFlag>0</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\Stack\Stack.ENU.ewplugin</file>
+        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
         <loadFlag>1</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
-        <loadFlag>1</loadFlag>
+        <file>$EW_DIR$\common\plugins\uCProbe\uCProbePlugin.ENU.ewplugin</file>
+        <loadFlag>0</loadFlag>
       </plugin>
     </debuggerPlugins>
   </configuration>
@@ -1460,7 +1500,7 @@
       <name>CHIPCON_ID</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>3</version>
+        <version>4</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1515,7 +1555,7 @@
         </option>
         <option>
           <name>ChipconFlashLockInfo</name>
-          <state>&lt;page size info. missing></state>
+          <state>&lt;page size info. missing&gt;</state>
         </option>
         <option>
           <name>ChipconBootLock</name>
@@ -1548,6 +1588,14 @@
         <option>
           <name>ChipconFlashRadio</name>
           <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID Selection method</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID</name>
+          <state>0000</state>
         </option>
       </data>
     </settings>
@@ -1601,7 +1649,7 @@
       <name>INFINEON_ID</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1652,6 +1700,14 @@
           <name>InfServerName2</name>
           <version>0</version>
           <state>3</state>
+        </option>
+        <option>
+          <name>InfineonHasCodeInXRAM</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>Infineon code in XRAM area</name>
+          <state>0xF000-0xF5FF</state>
         </option>
       </data>
     </settings>
@@ -1800,9 +1856,9 @@
     </settings>
     <settings>
       <name>CYGNAL_ID</name>
-      <archiveVersion>1</archiveVersion>
+      <archiveVersion>2</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -1867,6 +1923,10 @@
           <name>SilabsRegAfter</name>
           <state>0</state>
         </option>
+        <option>
+          <name>SilabsBankedXDATA</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -1904,12 +1964,12 @@
         <loadFlag>0</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\Stack\Stack.ENU.ewplugin</file>
+        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
         <loadFlag>1</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
-        <loadFlag>1</loadFlag>
+        <file>$EW_DIR$\common\plugins\uCProbe\uCProbePlugin.ENU.ewplugin</file>
+        <loadFlag>0</loadFlag>
       </plugin>
     </debuggerPlugins>
   </configuration>
@@ -2097,7 +2157,7 @@
       <name>CHIPCON_ID</name>
       <archiveVersion>2</archiveVersion>
       <data>
-        <version>3</version>
+        <version>4</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -2152,7 +2212,7 @@
         </option>
         <option>
           <name>ChipconFlashLockInfo</name>
-          <state>&lt;page size info. missing></state>
+          <state>&lt;page size info. missing&gt;</state>
         </option>
         <option>
           <name>ChipconBootLock</name>
@@ -2185,6 +2245,14 @@
         <option>
           <name>ChipconFlashRadio</name>
           <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID Selection method</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>USB Communication ID</name>
+          <state>0000</state>
         </option>
       </data>
     </settings>
@@ -2238,7 +2306,7 @@
       <name>INFINEON_ID</name>
       <archiveVersion>1</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -2289,6 +2357,14 @@
           <name>InfServerName2</name>
           <version>0</version>
           <state>3</state>
+        </option>
+        <option>
+          <name>InfineonHasCodeInXRAM</name>
+          <state>0</state>
+        </option>
+        <option>
+          <name>Infineon code in XRAM area</name>
+          <state>0xF000-0xF5FF</state>
         </option>
       </data>
     </settings>
@@ -2437,9 +2513,9 @@
     </settings>
     <settings>
       <name>CYGNAL_ID</name>
-      <archiveVersion>1</archiveVersion>
+      <archiveVersion>2</archiveVersion>
       <data>
-        <version>1</version>
+        <version>2</version>
         <wantNonLocal>1</wantNonLocal>
         <debug>1</debug>
         <option>
@@ -2504,6 +2580,10 @@
           <name>SilabsRegAfter</name>
           <state>0</state>
         </option>
+        <option>
+          <name>SilabsBankedXDATA</name>
+          <state>0</state>
+        </option>
       </data>
     </settings>
     <settings>
@@ -2541,12 +2621,12 @@
         <loadFlag>0</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\Stack\Stack.ENU.ewplugin</file>
+        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
         <loadFlag>1</loadFlag>
       </plugin>
       <plugin>
-        <file>$EW_DIR$\common\plugins\SymList\SymList.ENU.ewplugin</file>
-        <loadFlag>1</loadFlag>
+        <file>$EW_DIR$\common\plugins\uCProbe\uCProbePlugin.ENU.ewplugin</file>
+        <loadFlag>0</loadFlag>
       </plugin>
     </debuggerPlugins>
   </configuration>

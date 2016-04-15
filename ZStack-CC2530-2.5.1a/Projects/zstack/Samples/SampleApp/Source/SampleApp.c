@@ -75,7 +75,7 @@
 #include "MT_UART.h"
 
 #include "ds18b20.h" 
-
+#include "stdio.h"
 
 /*********************************************************************
  * MACROS
@@ -413,13 +413,16 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
   uint16 flashTime;
-
+  uint8 T[5],T_before,T_after;
   switch ( pkt->clusterId )
   {
     case SAMPLEAPP_POINT_TO_POINT_CLUSTERID:
-      HalUARTWrite(0,"Temp is:",8);        //???????
-      HalUARTWrite(0,&pkt->cmd.Data[0],2); //ASCII???PC?
-      HalUARTWrite(0,"\n",1);              // ????
+      HalUARTWrite(0,"Temp is:",8);        
+      T_before=pkt->cmd.Data[1]<<4|pkt->cmd.Data[1]>>4;
+      T_after=pkt->cmd.Data[0]&0x0f;
+      sprintf((char*)T,"%d.%d",T_before,T_after);
+      HalUARTWrite(0,T,4); 
+      HalUARTWrite(0,"\n",1);              
       break;
 
     case SAMPLEAPP_FLASH_CLUSTERID:
