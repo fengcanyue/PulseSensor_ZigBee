@@ -2242,7 +2242,7 @@
         <option>
           <name>Workseg Size</name>
           <version>0</version>
-          <state>8</state>
+          <state>0</state>
         </option>
         <option>
           <name>Constant Placement</name>
@@ -4344,6 +4344,9 @@
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_SampleApp.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Source\pulse.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\SampleApp.c</name>

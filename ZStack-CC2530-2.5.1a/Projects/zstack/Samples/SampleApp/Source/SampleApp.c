@@ -76,7 +76,8 @@
 
 #include "ds18b20.h" 
 #include "stdio.h"
-
+#include "pulse.h"
+#include "string.h"
 /*********************************************************************
  * MACROS
  */
@@ -191,6 +192,11 @@ void SampleApp_Init( uint8 task_id )
   
  // ????????  
   P0SEL &= 0xbf;         //DS18B20?io????
+  
+  //
+  CLKCONCMD |=0x08;//1011 1111  //让外部32M石英晶振工作
+  while(!(CLKCONSTA & 0x08));//0100 0000  //等待晶振稳定
+  T3_init();
 
   // Device hardware initialization can be added here or in main() (Zmain.c).
   // If the hardware is application specific - add it here.
@@ -326,13 +332,14 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   //  (setup in SampleApp_Init()).
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )
   {
-    //uint8 T[5];   
-    Temp_test();     
-   
+    //Temp_test();     
     //T[0]=temp/10+48;
     //T[1]=temp%10+48;
-    SampleApp_SendPointToPointMessage(temp,2);
-    
+    //SampleApp_SendPointToPointMessage(temp,2);
+    //
+    unsigned char len;
+    len=getPulseArr(BPM);
+    SampleApp_SendPointToPointMessage(PulseArr,len);
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
@@ -413,16 +420,23 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
   uint16 flashTime;
-  uint8 T[5],T_before,T_after;
+  //uint8 T[5],T_before,T_after;
   switch ( pkt->clusterId )
   {
+//    case SAMPLEAPP_POINT_TO_POINT_CLUSTERID:
+//      HalUARTWrite(0,"Temp is:",8);        
+//      T_before=pkt->cmd.Data[1]<<4|pkt->cmd.Data[1]>>4;
+//      T_after=pkt->cmd.Data[0]&0x0f;
+//      sprintf((char*)T,"%d.%d",T_before,T_after);
+//      HalUARTWrite(0,T,4); 
+//      HalUARTWrite(0,"\n",1);              
+//      break;
     case SAMPLEAPP_POINT_TO_POINT_CLUSTERID:
-      HalUARTWrite(0,"Temp is:",8);        
-      T_before=pkt->cmd.Data[1]<<4|pkt->cmd.Data[1]>>4;
-      T_after=pkt->cmd.Data[0]&0x0f;
-      sprintf((char*)T,"%d.%d",T_before,T_after);
-      HalUARTWrite(0,T,4); 
-      HalUARTWrite(0,"\n",1);              
+      HalUARTWrite(0,"Pulse is:",9); 
+      HalUARTWrite(0,pkt->cmd.Data,strlen((char const*)pkt->cmd.Data)-1); 
+      
+      //HalUARTWrite(0,pkt->cmd.Data,strlen((char const*)pkt->cmd.Data)); 
+      HalUARTWrite(0,"\n",1);   
       break;
 
     case SAMPLEAPP_FLASH_CLUSTERID:

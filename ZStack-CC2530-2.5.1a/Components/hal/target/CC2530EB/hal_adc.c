@@ -185,7 +185,7 @@ uint16 HalAdcRead (uint8 channel, uint8 resolution)
       reading >>= 6;
       break;
     case HAL_ADC_RESOLUTION_12:
-      reading >>= 4;
+      reading >>= 5;
       break;
     case HAL_ADC_RESOLUTION_14:
     default:
