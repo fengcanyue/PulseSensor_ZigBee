@@ -1,8 +1,8 @@
 #ifndef __DS18B20_H__
 #define __DS18B20_H__
 
-extern unsigned char temp[3],test1,test2;
+extern unsigned char temp[3],test1,test2,TempArr[9];
 extern unsigned char Ds18b20Initial(void);
 extern void Temp_test(void);
-
+extern unsigned char getTempArr(void);
 #endif

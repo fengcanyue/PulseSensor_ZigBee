@@ -50,8 +50,6 @@ unsigned char PulseArr[4];
  void T3_init(void);// 16位定时器计数器，2ms触发一次，开启中断
 // unsigned int analogRead(unsigned char channel);//读取A/D转换数据，再重新启动
  unsigned char getPulseArr(unsigned int dat);
- void pulse_test(void);
- void sendDataToProcessing(char symbol, unsigned int dat );
 __interrupt void T3_ISR(void) ;//定时器1中断函数
 
 
@@ -101,25 +99,8 @@ unsigned char getPulseArr(unsigned int dat)
 //  Putchar(symbol);                // symbol prefix tells Processing what type of data is coming
 //  UartTX_Send_String(buf, len);
 //}
-void pulse_test(void)
-{
-    sendDataToProcessing('S', Signal);     // send Processing the raw Pulse Sensor data
-    if (QS == true)
-    {          
-      // Quantified Self flag is true when arduino finds a heartbeat
-      sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
-      sendDataToProcessing('Q',IBI);   // send time between beats with a 'Q' prefix
-      //printf("%d\n",BPM);
-      QS = false; 
-    }// reset the Quantified Self flag for next time 
-    delay(137);                             //  take a break 19.6ms
-  }
-void sendDataToProcessing(char symbol, unsigned int dat ){
-  char  buf[5],len;
-  HalUARTWrite(0,(unsigned char *)&symbol,1);
-  len=sprintf(buf,"%d",dat);
-  HalUARTWrite(0,(unsigned char *)buf,len);
-}
+
+
 //定时器初始化(CLKCONCMD.TICKSPD为定时器提供滴答时钟，默认为001，即16MHz)
 void T3_init()
 {     
@@ -159,7 +140,7 @@ void T3_init()
 	//TL0=T0MS;
 	//TH0=T0MS>>8;				//reload 16 bit TIMER0	//重新载入定时器初值
   Signal =HalAdcRead (HAL_ADC_CHANNEL_4, HAL_ADC_RESOLUTION_12);              // read the Pulse Sensor 
-  sampleCounter += 2;                         // keep track of the time in mS with this variable
+  sampleCounter += 4;                         // keep track of the time in mS with this variable
   N = sampleCounter - lastBeatTime;       // monitor the time since the last beat to avoid noise
 
 

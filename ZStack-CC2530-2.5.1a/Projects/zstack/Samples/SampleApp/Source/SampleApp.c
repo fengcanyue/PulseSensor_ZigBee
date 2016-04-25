@@ -98,7 +98,9 @@
 const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
 {
   SAMPLEAPP_PERIODIC_CLUSTERID,
-  SAMPLEAPP_FLASH_CLUSTERID
+  SAMPLEAPP_FLASH_CLUSTERID,
+  SAMPLEAPP_POINT_TEMP_CLUSTERID,
+  SAMPLEAPP_POINT_PULSE_CLUSTERID
 };
 
 const SimpleDescriptionFormat_t SampleApp_SimpleDesc =
@@ -154,7 +156,8 @@ uint8 SampleAppFlashCounter = 0;
 void SampleApp_HandleKeys( uint8 shift, uint8 keys );
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pckt );
 void SampleApp_SendPeriodicMessage( void );
-void SampleApp_SendPointToPointMessage(uint8* data,uint8 len); //?????????
+void SampleApp_SendPointTempMessage( uint8* data ,uint8 len);
+void SampleApp_SendPointPulseMessage( uint8* data ,uint8 len);
 void SampleApp_SendFlashMessage( uint16 flashTime );
 
 /*********************************************************************
@@ -194,8 +197,8 @@ void SampleApp_Init( uint8 task_id )
   P0SEL &= 0xbf;         //DS18B20?io????
   
   //
-  CLKCONCMD |=0x08;//1011 1111  //让外部32M石英晶振工作
-  while(!(CLKCONSTA & 0x08));//0100 0000  //等待晶振稳定
+  CLKCONCMD |=0x10;//1011 1111  //让外部32M石英晶振工作
+  while(!(CLKCONSTA & 0x10));//0100 0000  //等待晶振稳定
   T3_init();
 
   // Device hardware initialization can be added here or in main() (Zmain.c).
@@ -298,7 +301,7 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
         // Received whenever the device changes state in the network
         case ZDO_STATE_CHANGE:
           SampleApp_NwkState = (devStates_t)(MSGpkt->hdr.status);
-          if ( //(SampleApp_NwkState == DEV_ZB_COORD)??????????
+          if ( //(SampleApp_NwkState == DEV_ZB_COORD)
                 (SampleApp_NwkState == DEV_ROUTER)
              || (SampleApp_NwkState == DEV_END_DEVICE) )
           {
@@ -332,14 +335,17 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   //  (setup in SampleApp_Init()).
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )
   {
-    //Temp_test();     
+   unsigned char len;
+   Temp_test(); 
+   len=getTempArr();
     //T[0]=temp/10+48;
     //T[1]=temp%10+48;
-    //SampleApp_SendPointToPointMessage(temp,2);
+    SampleApp_SendPointTempMessage(TempArr,len);
     //
-    unsigned char len;
+    
     len=getPulseArr(BPM);
-    SampleApp_SendPointToPointMessage(PulseArr,len);
+    SampleApp_SendPointPulseMessage(PulseArr,len);
+    printf("abc\n");
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
@@ -420,22 +426,18 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
   uint16 flashTime;
-  //uint8 T[5],T_before,T_after;
-  switch ( pkt->clusterId )
+   switch ( pkt->clusterId )
   {
-//    case SAMPLEAPP_POINT_TO_POINT_CLUSTERID:
-//      HalUARTWrite(0,"Temp is:",8);        
-//      T_before=pkt->cmd.Data[1]<<4|pkt->cmd.Data[1]>>4;
-//      T_after=pkt->cmd.Data[0]&0x0f;
-//      sprintf((char*)T,"%d.%d",T_before,T_after);
-//      HalUARTWrite(0,T,4); 
-//      HalUARTWrite(0,"\n",1);              
-//      break;
-    case SAMPLEAPP_POINT_TO_POINT_CLUSTERID:
-      HalUARTWrite(0,"Pulse is:",9); 
-      HalUARTWrite(0,pkt->cmd.Data,strlen((char const*)pkt->cmd.Data)-1); 
+    case SAMPLEAPP_POINT_TEMP_CLUSTERID:  
+      HalUARTWrite(0,"Temp is:",8); 
+      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
+      printf("get");
+      HalUARTWrite(0,"\n",1);  
+      break;
       
-      //HalUARTWrite(0,pkt->cmd.Data,strlen((char const*)pkt->cmd.Data)); 
+    case SAMPLEAPP_POINT_PULSE_CLUSTERID:
+      HalUARTWrite(0,"Pulse is:",9); 
+      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength); 
       HalUARTWrite(0,"\n",1);   
       break;
 
@@ -471,12 +473,13 @@ void SampleApp_SendPeriodicMessage( void )
     // Error occurred in request to send.
   }
 }
-void SampleApp_SendPointToPointMessage( uint8* data ,uint8 len)
+//温度
+void SampleApp_SendPointTempMessage( uint8* data ,uint8 len)
 {
   
   if ( AF_DataRequest( &Point_To_Point_DstAddr,
                        &SampleApp_epDesc,
-                       SAMPLEAPP_POINT_TO_POINT_CLUSTERID,
+                       SAMPLEAPP_POINT_TEMP_CLUSTERID,
                        len,
                        data,
                        &SampleApp_TransID,
@@ -490,6 +493,25 @@ void SampleApp_SendPointToPointMessage( uint8* data ,uint8 len)
   }
 }
 
+//脉搏
+void SampleApp_SendPointPulseMessage( uint8* data ,uint8 len)
+{
+  
+  if ( AF_DataRequest( &Point_To_Point_DstAddr,
+                       &SampleApp_epDesc,
+                       SAMPLEAPP_POINT_PULSE_CLUSTERID,
+                       len,
+                       data,
+                       &SampleApp_TransID,
+                       AF_DISCV_ROUTE,
+                       AF_DEFAULT_RADIUS ) == afStatus_SUCCESS )
+  {
+  }
+  else
+  {
+    // Error occurred in request to send.
+  }
+}
 /*********************************************************************
  * @fn      SampleApp_SendFlashMessage
  *

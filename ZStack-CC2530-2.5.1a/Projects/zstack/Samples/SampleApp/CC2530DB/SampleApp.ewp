@@ -1453,7 +1453,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11101</state>
+          <state>11111</state>
         </option>
         <option>
           <name>CCObjUseModuleName</name>
@@ -2536,7 +2536,7 @@
         <option>
           <name>CCAllowList</name>
           <version>1</version>
-          <state>11101</state>
+          <state>00010</state>
         </option>
         <option>
           <name>CCObjUseModuleName</name>
@@ -2666,7 +2666,7 @@
         </option>
         <option>
           <name>CCOptLevel</name>
-          <state>3</state>
+          <state>2</state>
         </option>
         <option>
           <name>CCOptStrategy</name>
@@ -2675,7 +2675,7 @@
         </option>
         <option>
           <name>CCOptLevelSlave</name>
-          <state>3</state>
+          <state>2</state>
         </option>
         <option>
           <name>CompilerMisraRules04</name>

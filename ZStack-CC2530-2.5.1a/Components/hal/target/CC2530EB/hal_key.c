@@ -321,7 +321,7 @@ void HalKeyPoll (void)
 
   if ((HAL_KEY_JOY_MOVE_PORT & HAL_KEY_JOY_MOVE_BIT))  /* Key is active HIGH */
   {
-    keys = halGetJoyKeyInput();
+    //keys = halGetJoyKeyInput(); 不使用摇杆，所以注释掉
   }
 
   /* If interrupts are not enabled, previous key status and current key status
