@@ -192,117 +192,147 @@ byte MT_UartCalcFCS( uint8 *msg_ptr, uint8 len )
  *
  * @return  None
  ***************************************************************************************************/
-void MT_UartProcessZToolData ( uint8 port, uint8 event )
-{
-  uint8  ch;
-  uint8  bytesInRxBuffer;
-  
-  (void)event;  // Intentionally unreferenced parameter
+//void MT_UartProcessZToolData ( uint8 port, uint8 event )
+//{
+//  uint8  ch;
+//  uint8  bytesInRxBuffer;
+//  
+//  (void)event;  // Intentionally unreferenced parameter
+//
+//  while (Hal_UART_RxBufLen(port))
+//  {
+//    HalUARTRead (port, &ch, 1);
+//
+//    switch (state)
+//    {
+//      case SOP_STATE:
+//        if (ch == MT_UART_SOF)
+//          state = LEN_STATE;
+//        break;
+//
+//      case LEN_STATE:
+//        LEN_Token = ch;
+//
+//        tempDataLen = 0;
+//
+//        /* Allocate memory for the data */
+//        pMsg = (mtOSALSerialData_t *)osal_msg_allocate( sizeof ( mtOSALSerialData_t ) +
+//                                                        MT_RPC_FRAME_HDR_SZ + LEN_Token );
+//
+//        if (pMsg)
+//        {
+//          /* Fill up what we can */
+//          pMsg->hdr.event = CMD_SERIAL_MSG;
+//          pMsg->msg = (uint8*)(pMsg+1);
+//          pMsg->msg[MT_RPC_POS_LEN] = LEN_Token;
+//          state = CMD_STATE1;
+//        }
+//        else
+//        {
+//          state = SOP_STATE;
+//          return;
+//        }
+//        break;
+//
+//      case CMD_STATE1:
+//        pMsg->msg[MT_RPC_POS_CMD0] = ch;
+//        state = CMD_STATE2;
+//        break;
+//
+//      case CMD_STATE2:
+//        pMsg->msg[MT_RPC_POS_CMD1] = ch;
+//        /* If there is no data, skip to FCS state */
+//        if (LEN_Token)
+//        {
+//          state = DATA_STATE;
+//        }
+//        else
+//        {
+//          state = FCS_STATE;
+//        }
+//        break;
+//
+//      case DATA_STATE:
+//
+//        /* Fill in the buffer the first byte of the data */
+//        pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen++] = ch;
+//
+//        /* Check number of bytes left in the Rx buffer */
+//        bytesInRxBuffer = Hal_UART_RxBufLen(port);
+//
+//        /* If the remain of the data is there, read them all, otherwise, just read enough */
+//        if (bytesInRxBuffer <= LEN_Token - tempDataLen)
+//        {
+//          HalUARTRead (port, &pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen], bytesInRxBuffer);
+//          tempDataLen += bytesInRxBuffer;
+//        }
+//        else
+//        {
+//          HalUARTRead (port, &pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen], LEN_Token - tempDataLen);
+//          tempDataLen += (LEN_Token - tempDataLen);
+//        }
+//
+//        /* If number of bytes read is equal to data length, time to move on to FCS */
+//        if ( tempDataLen == LEN_Token )
+//            state = FCS_STATE;
+//
+//        break;
+//
+//      case FCS_STATE:
+//
+//        FSC_Token = ch;
+//
+//        /* Make sure it's correct */
+//        if ((MT_UartCalcFCS ((uint8*)&pMsg->msg[0], MT_RPC_FRAME_HDR_SZ + LEN_Token) == FSC_Token))
+//        {
+//          osal_msg_send( App_TaskID, (byte *)pMsg );
+//        }
+//        else
+//        {
+//          /* deallocate the msg */
+//          osal_msg_deallocate ( (uint8 *)pMsg );
+//        }
+//
+//        /* Reset the state, send or discard the buffers at this point */
+//        state = SOP_STATE;
+//
+//        break;
+//
+//      default:
+//       break;
+//    }
+//  }
+//}
+//自己的串口接收函数
+void MT_UartProcessZToolData ( uint8 port, uint8 event ) 
+{ 
+   uint8 flag=0,i,j=0;   //flag是判断有没有收到数据，j记录数据长度 
+   uint8 buf[128]={0};       //串口buffer最大缓冲默认是128，我们这里用128. 
+   (void)event;           // Intentionally unreferenced parameter    
+   while (Hal_UART_RxBufLen(port)) //检测串口数据是否接收完成 
+   { 
+    HalUARTRead (port,&buf[j], 1);   //把数据接收放到buf中 
+    j++;                                      //记录字符数 
+     flag=1;                         //已经从串口接收到信息 
+    }   
+    if(flag==1)        //已经从串口接收到信息 
+    {     /* Allocate memory for the data */ 
+      //分配内存空间，为机构体内容+数据内容+1个记录长度的数据 
+      pMsg = (mtOSALSerialData_t *)osal_msg_allocate( sizeof    
+              ( mtOSALSerialData_t )+j+1); 
+       //事件号用原来的CMD_SERIAL_MSG 
+      pMsg->hdr.event = CMD_SERIAL_MSG; 
+      pMsg->msg = (uint8*)(pMsg+1);  //  把数据定位到结构体数据部分 
+       
+     pMsg->msg [0]= j;              //给上层的数据第一个是长度 
+     for(i=0;i<j;i++)                //从第二个开始记录数据   
+       pMsg->msg [i+1]= buf[i];      
+     osal_msg_send( App_TaskID, (byte *)pMsg );  //登记任务，发往上层 
+      /* deallocate the msg */ 
+     osal_msg_deallocate ( (uint8 *)pMsg );            //释放内存 
+  } 
+}   
 
-  while (Hal_UART_RxBufLen(port))
-  {
-    HalUARTRead (port, &ch, 1);
-
-    switch (state)
-    {
-      case SOP_STATE:
-        if (ch == MT_UART_SOF)
-          state = LEN_STATE;
-        break;
-
-      case LEN_STATE:
-        LEN_Token = ch;
-
-        tempDataLen = 0;
-
-        /* Allocate memory for the data */
-        pMsg = (mtOSALSerialData_t *)osal_msg_allocate( sizeof ( mtOSALSerialData_t ) +
-                                                        MT_RPC_FRAME_HDR_SZ + LEN_Token );
-
-        if (pMsg)
-        {
-          /* Fill up what we can */
-          pMsg->hdr.event = CMD_SERIAL_MSG;
-          pMsg->msg = (uint8*)(pMsg+1);
-          pMsg->msg[MT_RPC_POS_LEN] = LEN_Token;
-          state = CMD_STATE1;
-        }
-        else
-        {
-          state = SOP_STATE;
-          return;
-        }
-        break;
-
-      case CMD_STATE1:
-        pMsg->msg[MT_RPC_POS_CMD0] = ch;
-        state = CMD_STATE2;
-        break;
-
-      case CMD_STATE2:
-        pMsg->msg[MT_RPC_POS_CMD1] = ch;
-        /* If there is no data, skip to FCS state */
-        if (LEN_Token)
-        {
-          state = DATA_STATE;
-        }
-        else
-        {
-          state = FCS_STATE;
-        }
-        break;
-
-      case DATA_STATE:
-
-        /* Fill in the buffer the first byte of the data */
-        pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen++] = ch;
-
-        /* Check number of bytes left in the Rx buffer */
-        bytesInRxBuffer = Hal_UART_RxBufLen(port);
-
-        /* If the remain of the data is there, read them all, otherwise, just read enough */
-        if (bytesInRxBuffer <= LEN_Token - tempDataLen)
-        {
-          HalUARTRead (port, &pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen], bytesInRxBuffer);
-          tempDataLen += bytesInRxBuffer;
-        }
-        else
-        {
-          HalUARTRead (port, &pMsg->msg[MT_RPC_FRAME_HDR_SZ + tempDataLen], LEN_Token - tempDataLen);
-          tempDataLen += (LEN_Token - tempDataLen);
-        }
-
-        /* If number of bytes read is equal to data length, time to move on to FCS */
-        if ( tempDataLen == LEN_Token )
-            state = FCS_STATE;
-
-        break;
-
-      case FCS_STATE:
-
-        FSC_Token = ch;
-
-        /* Make sure it's correct */
-        if ((MT_UartCalcFCS ((uint8*)&pMsg->msg[0], MT_RPC_FRAME_HDR_SZ + LEN_Token) == FSC_Token))
-        {
-          osal_msg_send( App_TaskID, (byte *)pMsg );
-        }
-        else
-        {
-          /* deallocate the msg */
-          osal_msg_deallocate ( (uint8 *)pMsg );
-        }
-
-        /* Reset the state, send or discard the buffers at this point */
-        state = SOP_STATE;
-
-        break;
-
-      default:
-       break;
-    }
-  }
-}
 
 #if defined (ZAPP_P1) || defined (ZAPP_P2)
 /***************************************************************************************************

@@ -79,6 +79,7 @@
 #include "pulse.h"
 #include "string.h"
 #include "OSAL_Clock.h"
+#include "MT.h"
 /*********************************************************************
  * MACROS
  */
@@ -103,7 +104,8 @@ const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
   SAMPLEAPP_POINT_TEMP_CLUSTERID,
   SAMPLEAPP_POINT_PULSE_CLUSTERID,
   SAMPLEAPP_POINT_SYNC_ROUTER_CLUSTERID,
-  SAMPLEAPP_POINT_SYNC_COORD_CLUSTERID
+  SAMPLEAPP_POINT_SYNC_COORD_CLUSTERID,
+  SAMPLEAPP_COM_CLUSTERID
 };
 
 const SimpleDescriptionFormat_t SampleApp_SimpleDesc =
@@ -166,7 +168,7 @@ void SampleApp_SendPeriodicMessage( void );
 void SampleApp_SendPointToPointMessage( uint8* data ,uint8 len,unsigned int shortAddr ,int CLUSTERID);
 void SampleApp_SendPointPulseMessage( uint8* data ,uint8 len);
 void SampleApp_SendFlashMessage( uint16 flashTime );
-
+void SampleApp_SerialCMD(mtOSALSerialData_t* cmdMsg);
 /*********************************************************************
  * NETWORK LAYER CALLBACKS
  */
@@ -295,6 +297,9 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
     {
       switch ( MSGpkt->hdr.event )
       {
+        case CMD_SERIAL_MSG://串口接收到数据后由MT_UART层传过来的数据，用自己写的方式接收，编译时不定义MT相关内容
+          SampleApp_SerialCMD((mtOSALSerialData_t *)MSGpkt);
+          break;
         // Received when a key is pressed
         case KEY_CHANGE:
           SampleApp_HandleKeys( ((keyChange_t *)MSGpkt)->state, ((keyChange_t *)MSGpkt)->keys );
@@ -470,6 +475,12 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
       SampleApp_SendPointToPointMessage(Tm1.tm,4,pkt->srcAddr.addr.shortAddr,SAMPLEAPP_POINT_SYNC_ROUTER_CLUSTERID );
       break;
       
+    case SAMPLEAPP_COM_CLUSTERID:
+      len=pkt->cmd.Data[0];
+      HalUARTWrite(0,&pkt->cmd.Data[1],len);
+      HalUARTWrite(0,"\n",1);
+      break;
+      
     case SAMPLEAPP_FLASH_CLUSTERID:
       flashTime = BUILD_UINT16(pkt->cmd.Data[1], pkt->cmd.Data[2] );
       HalLedBlink( HAL_LED_4, 4, 50, (flashTime / 4) );
@@ -573,6 +584,17 @@ void SampleApp_SendFlashMessage( uint16 flashTime )
   {
     // Error occurred in request to send.
   }
+}
+
+void SampleApp_SerialCMD(mtOSALSerialData_t* cmdMsg)
+{
+  uint8 len,*str=NULL;
+  str=cmdMsg->msg;
+  len=*str;
+  for(int i=1; i<=len;i++)
+  printf("%c",str[i]);
+  printf("\n");
+  SampleApp_SendPointToPointMessage( str ,len+1,0x0000 ,SAMPLEAPP_COM_CLUSTERID);
 }
 
 /*********************************************************************
