@@ -4337,28 +4337,19 @@
   <group>
     <name>App</name>
     <file>
-      <name>$PROJ_DIR$\Source\ds18b20.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\ds18b20.h</name>
+      <name>$PROJ_DIR$\..\Source\ds18b20.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_SampleApp.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\Source\pulse.c</name>
+      <name>$PROJ_DIR$\..\Source\pulse.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\SampleApp.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\Source\SampleApp.h</name>
-    </file>
-    <file>
       <name>$PROJ_DIR$\Source\SampleAppHw.c</name>
-    </file>
-    <file>
-      <name>$PROJ_DIR$\..\Source\SampleAppHw.h</name>
     </file>
   </group>
   <group>
