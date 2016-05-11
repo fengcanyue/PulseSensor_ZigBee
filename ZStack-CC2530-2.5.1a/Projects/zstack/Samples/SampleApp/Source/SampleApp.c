@@ -78,7 +78,6 @@
 #include "stdio.h"
 #include "pulse.h"
 #include "string.h"
-#include "OSAL_Clock.h"
 #include "MT.h"
 /*********************************************************************
  * MACROS
@@ -103,8 +102,6 @@ const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
   SAMPLEAPP_FLASH_CLUSTERID,
   SAMPLEAPP_POINT_TEMP_CLUSTERID,
   SAMPLEAPP_POINT_PULSE_CLUSTERID,
-  SAMPLEAPP_POINT_SYNC_ROUTER_CLUSTERID,
-  SAMPLEAPP_POINT_SYNC_COORD_CLUSTERID,
   SAMPLEAPP_COM_CLUSTERID
 };
 
@@ -155,10 +152,7 @@ aps_Group_t SampleApp_Group;
 uint8 SampleAppPeriodicCounter = 0;
 uint8 SampleAppFlashCounter = 0;
 
-union {
-        unsigned long clock;
-        unsigned char  tm[4];
-      }Tm1,Tm2,Ts1,Ts2;
+
 /*********************************************************************
  * LOCAL FUNCTIONS
  */
@@ -317,9 +311,6 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
                 (SampleApp_NwkState == DEV_ROUTER)
              || (SampleApp_NwkState == DEV_END_DEVICE) )
           {
-            //添加同步函数
-            Ts1.clock=osal_getClock();
-            SampleApp_SendPointToPointMessage(Ts1.tm,4,0x0000,SAMPLEAPP_POINT_SYNC_COORD_CLUSTERID );
             // Start sending the periodic message in a regular interval.
             osal_start_timerEx( SampleApp_TaskID,
                               SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
@@ -351,7 +342,6 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )
   {
    unsigned char len;
-   unsigned long clock;
    Temp_test(); 
    len=getTempArr();
     //T[0]=temp/10+48;
@@ -361,8 +351,6 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
     
     len=getPulseArr(BPM);
     SampleApp_SendPointToPointMessage(PulseArr,len,0x0000,SAMPLEAPP_POINT_PULSE_CLUSTERID );
-    clock=osal_getClock();
-    printf("%ld\n",clock);
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
@@ -443,15 +431,10 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
   uint16 flashTime;
-  unsigned long clock;
-  char tm[5],len;
-  clock=osal_getClock();
-  len=sprintf(tm,"%ld",clock);
-  
+  char len;
    switch ( pkt->clusterId )
   {
     case SAMPLEAPP_POINT_TEMP_CLUSTERID:  
-      HalUARTWrite(0,(unsigned char*)tm,len);
       HalUARTWrite(0,"Temp is:",8); 
       HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
       printf("get");
@@ -464,17 +447,6 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
       HalUARTWrite(0,"\n",1);   
       break;
       
-    case SAMPLEAPP_POINT_SYNC_ROUTER_CLUSTERID:
-      Ts2.clock=osal_getClock();
-      osal_memcpy(Tm1.tm,pkt->cmd.Data,pkt->cmd.DataLength);
-      osal_setClock(osal_getClock()+Tm1.clock-(Ts2.clock+Ts1.clock)/2);
-      break;
-      
-    case SAMPLEAPP_POINT_SYNC_COORD_CLUSTERID:
-      Tm1.clock=osal_getClock();
-      SampleApp_SendPointToPointMessage(Tm1.tm,4,pkt->srcAddr.addr.shortAddr,SAMPLEAPP_POINT_SYNC_ROUTER_CLUSTERID );
-      break;
-      
     case SAMPLEAPP_COM_CLUSTERID:
       len=pkt->cmd.Data[0];
       HalUARTWrite(0,&pkt->cmd.Data[1],len);
@@ -485,8 +457,6 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
       flashTime = BUILD_UINT16(pkt->cmd.Data[1], pkt->cmd.Data[2] );
       HalLedBlink( HAL_LED_4, 4, 50, (flashTime / 4) );
       break;
-      
-      
   }
 }
 
