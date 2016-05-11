@@ -342,7 +342,7 @@ void HalKeyPoll (void)
     /* Key interrupt handled here */
   }
 
-  if (HAL_PUSH_BUTTON1())
+  if (PUSH2_SBIT)//(HAL_PUSH_BUTTON1())
   {
     keys |= HAL_KEY_SW_6;
   }

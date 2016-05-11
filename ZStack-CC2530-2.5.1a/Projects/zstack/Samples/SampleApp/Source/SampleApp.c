@@ -79,6 +79,7 @@
 #include "pulse.h"
 #include "string.h"
 #include "MT.h"
+#include "DS1307.h"
 /*********************************************************************
  * MACROS
  */
@@ -354,7 +355,7 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
-
+    //getTime();
     // return unprocessed events
     return (events ^ SAMPLEAPP_SEND_PERIODIC_MSG_EVT);
   }
@@ -382,7 +383,7 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
 {
   (void)shift;  // Intentionally unreferenced parameter
   
-  if ( keys & HAL_KEY_SW_1 )
+  if ( keys & HAL_KEY_SW_6 )
   {
     /* This key sends the Flash Command is sent to Group 1.
      * This device will not receive the Flash Command from this
@@ -455,7 +456,11 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
       
     case SAMPLEAPP_FLASH_CLUSTERID:
       flashTime = BUILD_UINT16(pkt->cmd.Data[1], pkt->cmd.Data[2] );
-      HalLedBlink( HAL_LED_4, 4, 50, (flashTime / 4) );
+      setTime(0,1,1,1,1,1,16);
+      //MicroWait(20000);
+      //HalLedBlink( HAL_LED_1, 4, 50, (flashTime / 4) );
+      getTime();
+      //HalLedBlink( HAL_LED_1, 4, 50, (flashTime / 4) );
       break;
   }
 }

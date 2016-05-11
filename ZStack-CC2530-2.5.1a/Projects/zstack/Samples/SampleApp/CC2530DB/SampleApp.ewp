@@ -4337,7 +4337,13 @@
   <group>
     <name>App</name>
     <file>
+      <name>$PROJ_DIR$\..\Source\DS1307.c</name>
+    </file>
+    <file>
       <name>$PROJ_DIR$\..\Source\ds18b20.c</name>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\iic.c</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\Source\OSAL_SampleApp.c</name>
