@@ -96,7 +96,7 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-
+unsigned char allMsg[32]={'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'};
 // This list should be filled with Application specific Cluster IDs.
 const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
 {
@@ -355,14 +355,22 @@ uint16 SampleApp_ProcessEvent( uint8 task_id, uint16 events )
   //  (setup in SampleApp_Init()).
   if ( events & SAMPLEAPP_SEND_PERIODIC_MSG_EVT )
   {
-   unsigned char len;
-   Temp_test(); 
-   len=getTempArr();
-   SampleApp_SendPointToPointMessage(TempArr,len,0x0000,SAMPLEAPP_POINT_TEMP_CLUSTERID );
-    
-    
-    len=getPulseArr(BPM);
-    SampleApp_SendPointToPointMessage(PulseArr,len,0x0000,SAMPLEAPP_POINT_PULSE_CLUSTERID );
+
+    getPulseArr(BPM);
+    for(int i=0;i<3;i++)
+      allMsg[i]=PulseArr[i];
+    allMsg[3]=';';
+      
+    Temp_test(); 
+    getTempArr();
+    //SampleApp_SendPointToPointMessage(TempArr,len,0x0000,SAMPLEAPP_POINT_TEMP_CLUSTERID );
+    for(int i=4;i<8;i++)
+    {
+    allMsg[i]=TempArr[i-4];
+    }
+    allMsg[8]=';';
+   
+    SampleApp_SendPointToPointMessage(allMsg,32,0x0000,SAMPLEAPP_POINT_ALLMSG_CLUSTERID );
     // Setup to send message again in normal period (+ a little jitter)
     osal_start_timerEx( SampleApp_TaskID, SAMPLEAPP_SEND_PERIODIC_MSG_EVT,
         (SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT + (osal_rand() & 0x00FF)) );
@@ -453,6 +461,7 @@ void SampleApp_HandleKeys( uint8 shift, uint8 keys )
  *
  * @return  none
  */
+unsigned char asc_16[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
 {
   uint16 flashTime;
@@ -483,6 +492,18 @@ void SampleApp_MessageMSGCB( afIncomingMSGPacket_t *pkt )
       setTime(0,1,1,1,1,1,16);
       HalLedBlink( HAL_LED_1, 4, 50, (flashTime / 4) );
       break;
+    case SAMPLEAPP_POINT_ALLMSG_CLUSTERID:
+      HalUARTWrite(0,"0;",2);
+      HalUARTWrite(0,&asc_16[(pkt->srcAddr.addr.shortAddr)/4096],1);
+      HalUARTWrite(0,&asc_16[(pkt->srcAddr.addr.shortAddr)%4096/256],1);
+      HalUARTWrite(0,&asc_16[(pkt->srcAddr.addr.shortAddr)%256/16],1);
+      HalUARTWrite(0,&asc_16[(pkt->srcAddr.addr.shortAddr)%16],1);
+      HalUARTWrite(0,";",1);
+      HalUARTWrite(0,pkt->cmd.Data,pkt->cmd.DataLength);
+      HalUARTWrite(0,"\n",1);
+      break;
+      
+      
   }
 }
 
@@ -584,13 +605,23 @@ void SampleApp_SendFlashMessage( uint16 flashTime )
 
 void SampleApp_SerialCMD(mtOSALSerialData_t* cmdMsg)
 {
-  uint8 len,*str=NULL;
-  str=cmdMsg->msg;
-  len=*str;
-  for(int i=1; i<=len;i++)
-  printf("%c",str[i]);
-  printf("\n");
-  SampleApp_SendPointToPointMessage( str ,len+1,0x0000 ,SAMPLEAPP_COM_CLUSTERID);
+  //uint8 len,*str=NULL;
+  if(cmdMsg->msg[18]=='A')
+  {
+    for(int i=20;i<30;i++)
+      allMsg[i-11]=cmdMsg->msg[i];
+    allMsg[19]=',';
+    for(int i=33;i<44;i++)
+      allMsg[i-13]=cmdMsg->msg[i];
+    allMsg[31]=';';
+  }
+  
+  //str=cmdMsg->msg;
+  //len=*str;
+//  for(int i=1; i<=len;i++)
+//  printf("%c",str[i]);
+//  printf("\n");
+ // SampleApp_SendPointToPointMessage( str ,len+1,0x0000 ,SAMPLEAPP_COM_CLUSTERID);
 }
 
 /*********************************************************************

@@ -69,6 +69,7 @@ extern "C"
 #define SAMPLEAPP_POINT_TEMP_CLUSTERID 3
 #define SAMPLEAPP_POINT_PULSE_CLUSTERID 4  
 #define SAMPLEAPP_COM_CLUSTERID        5
+#define SAMPLEAPP_POINT_ALLMSG_CLUSTERID 6
 // Send Message Timeout
 #define SAMPLEAPP_SEND_PERIODIC_MSG_TIMEOUT   5000     // Every 5 seconds
 #define SAMPLEAPP_SCAN_IC_TIMEOUT             400      //Every 400ms

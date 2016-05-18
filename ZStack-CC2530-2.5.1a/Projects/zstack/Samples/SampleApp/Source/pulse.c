@@ -28,7 +28,7 @@
 //全局变量
 //char T3Flag=0;
 unsigned char PulsePin = 4; //p0_4
-unsigned char PulseArr[4];
+unsigned char PulseArr[3]={'0','0','0'};
 // these variables are volatile because they are used during the interrupt service routine!
  unsigned int BPM;                   // used to hold the pulse rate
  unsigned int Signal;                // holds the incoming raw data
@@ -49,7 +49,7 @@ unsigned char PulseArr[4];
  //函数声明
  void T3_init(void);// 16位定时器计数器，2ms触发一次，开启中断
 // unsigned int analogRead(unsigned char channel);//读取A/D转换数据，再重新启动
- unsigned char getPulseArr(unsigned int dat);
+ void getPulseArr(unsigned int dat);
 __interrupt void T3_ISR(void) ;//定时器1中断函数
 
 
@@ -77,11 +77,19 @@ __interrupt void T3_ISR(void) ;//定时器1中断函数
 //  return U0DBUF;
 //}
 //获取脉搏数组的函数
-unsigned char getPulseArr(unsigned int dat)
+void getPulseArr(unsigned int dat)
 {
-  unsigned char len;
-  len=sprintf((char*)PulseArr,"%d",dat);
-  return len;
+  //unsigned char len;
+  PulseArr[0]=dat/100+48;
+  PulseArr[1]=dat%100/10+48;
+  PulseArr[2]=dat%100%10+48;
+ // len=sprintf((char*)PulseArr,"%d",dat);
+//  if(len<2)
+//  {
+//    PulseArr[2]=PulseArr[1];
+//    PulseArr[1]=PulseArr[0];
+//    PulseArr[0]='0';
+//  }
 }
 //延时函数
 //void delay(unsigned int n) //延时us
