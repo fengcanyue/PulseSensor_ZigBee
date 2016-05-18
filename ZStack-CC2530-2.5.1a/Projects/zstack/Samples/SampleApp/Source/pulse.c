@@ -106,7 +106,7 @@ void T3_init()
 {     
       T3CTL |= 0x08 ;             //开溢出中断  00001000   
       T3IE = 1;                   //开总中断和T3中断
-      T3CTL|=0XE0;               // 11100000 128分频,128/16000000*N=0.002S,N=250              
+      T3CTL|=0XE0;               // 11100000 128分频,128/8000000*N=0.004S,N=250              
       T3CTL |= 0X02;            //模计数方式，0x00到T3CC0
       T3CC0=0xF9;              //设置T3CC0为249
       T3CCTL0 |=0x04;          //使用模模式，需要设置通道0的输出比较模式
@@ -130,15 +130,14 @@ void T3_init()
 #pragma vector = T3_VECTOR//定时器3 
  __interrupt void T3_ISR(void) 
 
-{          
+{ 
+ 
   IRCON = 0x00;                  //中断标志4，清中断标志, 也可由硬件自动完成 
   long N;
   unsigned char i;
 // keep a running total of the last 10 IBI values
   unsigned int runningTotal = 0;                  // clear the runningTotal variable    
   EA=0;                                      // disable interrupts while we do this （EA:cpu总中断开关）关中断
-	//TL0=T0MS;
-	//TH0=T0MS>>8;				//reload 16 bit TIMER0	//重新载入定时器初值
   Signal =HalAdcRead (HAL_ADC_CHANNEL_4, HAL_ADC_RESOLUTION_12);              // read the Pulse Sensor 
   sampleCounter += 4;                         // keep track of the time in mS with this variable
   N = sampleCounter - lastBeatTime;       // monitor the time since the last beat to avoid noise
@@ -220,5 +219,6 @@ void T3_init()
     secondBeat = false;                    // when we get the heartbeat back
   }
 
-  EA=1;                                   // enable interrupts when youre done!
+  EA=1;  
+                            // enable interrupts when youre done!
 }// end isr

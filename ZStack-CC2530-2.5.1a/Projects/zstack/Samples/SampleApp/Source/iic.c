@@ -5,9 +5,9 @@
 #define FALSE 0
 
 #define SCL P1_3
-#define SDA P2_0
-#define set_sda_in()  P2DIR &= ~(1<<0)
-#define set_sda_out() P2DIR |= 1<<0
+#define SDA P0_6
+#define set_sda_in()  P0DIR &= ~(1<<6)
+#define set_sda_out() P0DIR |= 1<<6
 #define set_scl_out() P1DIR |= 1<<3
 	
 #define delay_TIME 500
