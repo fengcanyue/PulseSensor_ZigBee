@@ -1370,10 +1370,10 @@
           <name>CCDefines</name>
           <state>ZTOOL_P1</state>
           <state>COORDINATOR</state>
-          <state>MT_TASK</state>
-          <state>MT_SYS_FUNC</state>
-          <state>MT_ZDO_FUNC</state>
-          <state>LCD_SUPPORTED=DEBUG</state>
+          <state>xMT_TASK</state>
+          <state>xMT_SYS_FUNC</state>
+          <state>xMT_ZDO_FUNC</state>
+          <state>xLCD_SUPPORTED=DEBUG</state>
         </option>
         <option>
           <name>CCPreprocFile</name>
@@ -5448,6 +5448,9 @@
     <file>
       <name>$PROJ_DIR$\Source\SampleAppHw.c</name>
     </file>
+    <file>
+      <name>$PROJ_DIR$\..\Source\UART.c</name>
+    </file>
   </group>
   <group>
     <name>HAL</name>
@@ -5740,7 +5743,7 @@
       <name>$PROJ_DIR$\..\..\..\..\..\Components\mt\MT_UART.c</name>
     </file>
     <file>
-      <name>$PROJ_DIR$\..\..\..\..\..\Components\mt\mt_uart.h</name>
+      <name>$PROJ_DIR$\..\..\..\..\..\Components\mt\MT_UART.h</name>
     </file>
     <file>
       <name>$PROJ_DIR$\..\..\..\..\..\Components\mt\MT_UTIL.c</name>

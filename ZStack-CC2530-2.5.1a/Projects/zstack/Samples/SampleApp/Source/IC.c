@@ -8,8 +8,9 @@
 #include "DS1307.h"
 #include "rc522.h"
 #include "IC.h"
+#include "UART.h"
 #include "hal_led.h"
-
+#include "stdio.h"
   //uchar qq[4];
   //uchar buf[4];
 
@@ -47,6 +48,9 @@ unsigned char  data[17] = {0};
 unsigned char g_ucTempbuf[20]={0};
 unsigned char  DefaultKey[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}; 
 unsigned char Card_ID[4]={0};
+unsigned char startTime[16]={0};
+unsigned char stopTime[16]={0};
+unsigned char dec[10]={'0','1','2','3','4','5','6','7','8','9'};
 void writeTimeToIC(unsigned char addr)
 {
   unsigned char status;
@@ -58,7 +62,7 @@ void writeTimeToIC(unsigned char addr)
          }
 /////////////////////////////////////////////////////////////////////
         
-         status = PcdAnticoll(Card_ID);//·À³å×²
+         status = PcdAnticoll(g_ucTempbuf);//·À³å×²
 //////////////////////////////////////////////////////////////////////
          if (status != MI_OK)
          { 
@@ -104,6 +108,8 @@ void readTimeFromIC(unsigned char addr)
 /////////////////////////////////////////////////////////////////////
         
          status = PcdAnticoll(g_ucTempbuf);//·À³å×²
+         for(int i=0;i<4;i++)
+           Card_ID[i]=g_ucTempbuf[i];
 //////////////////////////////////////////////////////////////////////
          if (status != MI_OK)
          { 
@@ -128,9 +134,27 @@ void readTimeFromIC(unsigned char addr)
            return;   
          }
          PcdHalt();   //ÃüÁî¿¨Æ¬½øÈëÐÝÃß×´Ì¬
-         //HalLedBlink( HAL_LED_1, 1, 50, 250 );
-         HalUARTWrite(0,g_ucTempbuf,16);
-         HalUARTWrite(0,"\n",1);
+//´òÓ¡¿¨ºÅ
+         UartSend_String("1;",2); 
+         for(int i=0;i<4 ;i++)
+         {
+           UartSend_String(&dec[Card_ID[i]/100],1);
+           printf("%c",dec[Card_ID[i]/100]);
+           UartSend_String(&dec[Card_ID[i]%100/10],1);
+           printf("%c",dec[Card_ID[i]%100/10]);
+           UartSend_String(&dec[Card_ID[i]%10],1);
+           printf("%c",dec[Card_ID[i]%10]);
+           if(i==3)
+           {
+             UartSend_String(";",1);
+             break;
+           }
+           UartSend_String(".",1);
+         }
+  //´òÓ¡³É¼¨  
+         for(int i=0;i<21;i++)
+           UartSend_String(";",1);
+         UartSend_String("\n",1);
 }
 
 void IC_Init(void)

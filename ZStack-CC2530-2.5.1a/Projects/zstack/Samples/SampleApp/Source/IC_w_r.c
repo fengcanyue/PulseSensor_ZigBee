@@ -35,16 +35,21 @@ char PcdWrite(unsigned char addr,unsigned char *pData);
 char PcdAuthState(unsigned char auth_mode,unsigned char addr,unsigned char *pKey,unsigned char *pSnr);
 void Initial(void);
 
-void Delay_I_1us(unsigned int k)
-{
-  unsigned int i,j;
-  for(i=0;i<k;i++)
-    for(j=0;j<32;j++);
-}
 //void Delay_I_1us(unsigned int k)
 //{
-//  asm("nop");asm("nop");asm("nop");
+//  unsigned int i,j;
+//  for(i=0;i<k;i++)
+//    for(j=0;j<32;j++);
 //}
+void Delay_I_1us(unsigned int k)
+{
+  while(k--)
+  {
+  asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
+  asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
+  asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");asm("nop");
+  }
+}
 void Initial(void)
 {
 
@@ -318,7 +323,7 @@ char PcdComMF522(unsigned char Command, 		//RC522命令字
     while ((i!=0) && !(n&0x01) && !(n&waitFor));		//退出条件i=0,定时器中断，与写空闲命令
     ClearBitMask(BitFramingReg,0x80);					//清理允许StartSend位
     if (i!=0)
-    {    
+    {   
          if(!(ReadRawRC(ErrorReg)&0x1B))			//读错误标志寄存器BufferOfI CollErr ParityErr ProtocolErr
          {
              status = MI_OK;

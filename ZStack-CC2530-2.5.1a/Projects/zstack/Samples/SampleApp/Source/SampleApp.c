@@ -81,6 +81,7 @@
 #include "MT.h"
 #include "DS1307.h"
 #include "IC.h"
+#include "UART.h"
 /*********************************************************************
  * MACROS
  */
@@ -96,7 +97,7 @@
 /*********************************************************************
  * GLOBAL VARIABLES
  */
-unsigned char allMsg[32]={'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'};
+unsigned char allMsg[32]={'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0',',','0','0','0','0','0','0','0','0','0','0','0','0'};
 // This list should be filled with Application specific Cluster IDs.
 const cId_t SampleApp_ClusterList[SAMPLEAPP_MAX_CLUSTERS] =
 {
@@ -192,11 +193,10 @@ void SampleApp_Init( uint8 task_id )
   SampleApp_TaskID = task_id;
   SampleApp_NwkState = DEV_INIT;
   SampleApp_TransID = 0;
-  
- /***********串口配置************/
-  MT_UartInit();//串口初始化
-  MT_UartRegisterTaskID(task_id);//注册
-  HalUARTWrite(0,"Hello World\n",12);
+#ifdef COORDINATOR
+   UartInitial();
+#endif
+ 
 
 #ifdef PORTABLE
  // 配置温度传感器DS18b20引脚 
@@ -206,6 +206,11 @@ void SampleApp_Init( uint8 task_id )
   CLKCONCMD |=0x10;//0001 0000  //让滴答时钟为晶振的8分频
   while(!(CLKCONSTA & 0x10)); //等待晶振稳定
   T3_init();
+  
+  /***********串口配置************/
+  //MT_UartInit();//串口初始化
+  MT_UartRegisterTaskID(task_id);//注册
+  HalUARTWrite(0,"Hello World\n",12);
 #else
   //MFRC522初始化
   IC_Init();
